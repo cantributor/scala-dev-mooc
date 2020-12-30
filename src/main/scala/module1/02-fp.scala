@@ -26,50 +26,32 @@ import scala.annotation.tailrec
        case Option.Some(v) => v
        case Option.None => throw new Exception("get on empty Option")
       }
-   }
+
+      def printIfAny(): Unit = this match {
+        case Option.Some(v) => println(v)
+        case Option.None =>
+      }
+
+      def orElse[B >: A](other: Option[B]): Option[B] = this match {
+        case Option.Some(_) => this
+        case Option.None => other
+      }
+
+      def zip[B >: A](other: Option[B]): Option[(A, B)] = (this, other) match {
+        case (Option.Some(a), Option.Some(b)) => Option.Some((a, b))
+        case _ => Option.None
+      }
+
+      def filter(pred: A => Boolean): Option[A] = this match {
+        case Option.Some(v) if pred(v) => this
+        case _ => Option.None
+      }
+  }
 
    object Option {
-    case class Some[A](v: A) extends Option[A]
-    case object None extends Option[Nothing]
+     case class Some[A](v: A) extends Option[A]
+     case object None extends Option[Nothing]
    }
-
-
-
-
-  /**
-   *
-   * Реализовать метод printIfAny, который будет печатать значение, если оно есть
-   */
-
-  /**
-   *
-   * реализовать метод orElse который будет возвращать другой Option, если данный пустой
-   */
-
-
-  /**
-   *
-   * Реализовать метод isEmpty, который будет возвращать true если Option не пуст и false в противном случае
-   */
-
-
-  /**
-   *
-   * Реализовать метод get, который будет возвращать значение
-   */
-
-  /**
-   *
-   * Реализовать метод zip, который будет создавать Option от пары значений из 2-х Option
-   */
-
-
-  /**
-   *
-   * Реализовать метод filter, который будет возвращать не пустой Option
-   * в случае если исходный не пуст и предикат от значения = true
-   */
-
  }
 
  object recursion {

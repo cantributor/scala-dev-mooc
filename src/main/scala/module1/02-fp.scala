@@ -1,5 +1,6 @@
 package module1
 
+import module1.list.List
 import module1.list.List.Cons
 
 import scala.annotation.tailrec
@@ -87,90 +88,75 @@ import scala.annotation.tailrec
 
  }
 
- object list {
-   /**
-    *
-    * Реализовать односвязанный имутабельный список List
-    */
+object list {
 
-   sealed trait List[+A]{
-     def ::[AA >: A](head: AA): List[AA] = Cons(head, this)
+  /**
+   *
+   * Реализовать односвязанный имутабельный список List
+   */
+
+  sealed trait List[+A] {
+    import List._
+
+    def ::[AA >: A](head: AA): List[AA] = Cons(head, this)
 
     def mkString: String = mkString(", ")
-
     def mkString(sep: String): String = {
-       import List._
-
+      @tailrec
       def loop(l: List[A], acc: StringBuilder): StringBuilder = {
         l match {
-         case List.Nil => acc
-         case h :: Nil => acc.append(s"$h")
-         case h :: t => loop(t, acc.append(s"$h$sep"))
+          case List.Nil => acc
+          case h :: List.Nil => acc.append(s"$h")
+          case h :: t => loop(t, acc.append(s"$h$sep"))
         }
-       }
+      }
       loop(this, new StringBuilder()).toString()
-     }
+    }
 
-     def map[B](f: A => B): List[B] = ???
-   }
+    /**
+     * Реверс с перевоплощением как основа для обычного реверса и мэппинга
+     */
+    private def reverse[B](f: A => B): List[B] = {
+      @tailrec
+      def loop(remainder: List[A], acc: List[B]): List[B] = {
+        remainder match {
+          case List.Nil => acc
+          case head :: tail => loop(tail, f(head) :: acc)
+        }
+      }
+      loop(this, List())
+    }
 
-   object List{
+    /**
+     * Нормальный реверс как частный случай реверса с перевоплощением
+     */
+    def reverse: List[A] = reverse(a => a)
+
+    /**
+     * Мэппинг как сочетание реверса с перевоплощением и простого реверса обратно
+     */
+    def map[B](f: A => B): List[B] = this.reverse(f).reverse
+  }
+
+  object List {
+
     case object Nil extends List[Nothing]
+
     case class ::[A](head: A, tail: List[A]) extends List[A]
-    val Cons = ::
+
+    val Cons: ::.type = ::
 
     def apply[T](arg: T*): List[T] = {
-     var l: List[T] = List.Nil
-     arg.foreach(el => l = el :: l)
-     l
+      var l: List[T] = List.Nil
+      arg.foreach(el => l = el :: l)
+      l
     }
-   }
+  }
 
-   val list = 1 :: List.Nil
+  def incList(list: List[Int]): List[Int] = list.map(i => i + 1)
 
-   /**
-    *
-    * Реализовать метод конс :: который позволит добавлять элемент в голову списка
-    */
+  def shoutString(list: List[String]): List[String] = list.map(s => s + "!")
 
-
-   /**
-    *
-    * Реализовать конструктор, для создания списка n элементов
-    */
-
-
-   /**
-    *
-    * Реализовать метод mkString который позволит красиво представить список в виде строки
-    */
-
-
-   /**
-    *
-    * Реализовать метод reverse который позволит заменить порядок элементов в списке на противоположный
-    */
-
-
-   /**
-    *
-    * Написать функцию incList котрая будет принимать список Int и возвращать список,
-    * где каждый элемент будет увеличен на 1
-    */
-
-
-   /**
-    *
-    * Написать функцию shoutString котрая будет принимать список String и возвращать список,
-    * где к каждому элементу будет добавлен префикс в виде '!'
-    */
-
-
-   /**
-    *
-    * Реализовать метод для списка который будет применять некую ф-цию к элементам данного списка
-    */
-
-
-
- }
+  val listInt: List[Int] = 1 :: 2 :: 3 :: List.Nil
+  val listStr: List[String] = "Hello" :: "Goodbye" :: "See ya" :: List.Nil
+}

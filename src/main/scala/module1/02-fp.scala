@@ -33,7 +33,7 @@ import scala.annotation.tailrec
         case Option.None =>
       }
 
-      def orElse[B >: A](other: Option[B]): Option[B] = this match {
+      def orElse[B >: A](other: => Option[B]): Option[B] = this match {
         case Option.Some(_) => this
         case Option.None => other
       }
@@ -130,7 +130,7 @@ object list {
     /**
      * Нормальный реверс как частный случай реверса с перевоплощением
      */
-    def reverse: List[A] = reverse(a => a)
+    def reverse: List[A] = reverse(identity)
 
     /**
      * Мэппинг как сочетание реверса с перевоплощением и простого реверса обратно
@@ -153,9 +153,9 @@ object list {
     }
   }
 
-  def incList(list: List[Int]): List[Int] = list.map(i => i + 1)
+  def incList(list: List[Int]): List[Int] = list.map(_ + 1)
 
-  def shoutString(list: List[String]): List[String] = list.map(s => s + "!")
+  def shoutString(list: List[String]): List[String] = list.map("!" + _)
 
   val listInt: List[Int] = 1 :: 2 :: 3 :: List.Nil
   val listStr: List[String] = "Hello" :: "Goodbye" :: "See ya" :: List.Nil

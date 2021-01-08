@@ -1,5 +1,6 @@
 package module1
 
+import module1.list.List
 import module1.list.List.Cons
 
 import scala.annotation.tailrec
@@ -26,50 +27,32 @@ import scala.annotation.tailrec
        case Option.Some(v) => v
        case Option.None => throw new Exception("get on empty Option")
       }
-   }
+
+      def printIfAny(): Unit = this match {
+        case Option.Some(v) => println(v)
+        case Option.None =>
+      }
+
+      def orElse[B >: A](other: => Option[B]): Option[B] = this match {
+        case Option.Some(_) => this
+        case Option.None => other
+      }
+
+      def zip[B >: A](other: Option[B]): Option[(A, B)] = (this, other) match {
+        case (Option.Some(a), Option.Some(b)) => Option.Some((a, b))
+        case _ => Option.None
+      }
+
+      def filter(pred: A => Boolean): Option[A] = this match {
+        case Option.Some(v) if pred(v) => this
+        case _ => Option.None
+      }
+  }
 
    object Option {
-    case class Some[A](v: A) extends Option[A]
-    case object None extends Option[Nothing]
+     case class Some[A](v: A) extends Option[A]
+     case object None extends Option[Nothing]
    }
-
-
-
-
-  /**
-   *
-   * Реализовать метод printIfAny, который будет печатать значение, если оно есть
-   */
-
-  /**
-   *
-   * реализовать метод orElse который будет возвращать другой Option, если данный пустой
-   */
-
-
-  /**
-   *
-   * Реализовать метод isEmpty, который будет возвращать true если Option не пуст и false в противном случае
-   */
-
-
-  /**
-   *
-   * Реализовать метод get, который будет возвращать значение
-   */
-
-  /**
-   *
-   * Реализовать метод zip, который будет создавать Option от пары значений из 2-х Option
-   */
-
-
-  /**
-   *
-   * Реализовать метод filter, который будет возвращать не пустой Option
-   * в случае если исходный не пуст и предикат от значения = true
-   */
-
  }
 
  object recursion {
@@ -105,90 +88,75 @@ import scala.annotation.tailrec
 
  }
 
- object list {
-   /**
-    *
-    * Реализовать односвязанный имутабельный список List
-    */
+object list {
 
-   sealed trait List[+A]{
-     def ::[AA >: A](head: AA): List[AA] = Cons(head, this)
+  /**
+   *
+   * Реализовать односвязанный имутабельный список List
+   */
+
+  sealed trait List[+A] {
+    import List._
+
+    def ::[AA >: A](head: AA): List[AA] = Cons(head, this)
 
     def mkString: String = mkString(", ")
-
     def mkString(sep: String): String = {
-       import List._
-
+      @tailrec
       def loop(l: List[A], acc: StringBuilder): StringBuilder = {
         l match {
-         case List.Nil => acc
-         case h :: Nil => acc.append(s"$h")
-         case h :: t => loop(t, acc.append(s"$h$sep"))
+          case List.Nil => acc
+          case h :: List.Nil => acc.append(s"$h")
+          case h :: t => loop(t, acc.append(s"$h$sep"))
         }
-       }
+      }
       loop(this, new StringBuilder()).toString()
-     }
+    }
 
-     def map[B](f: A => B): List[B] = ???
-   }
+    /**
+     * Реверс с перевоплощением как основа для обычного реверса и мэппинга
+     */
+    private def reverse[B](f: A => B): List[B] = {
+      @tailrec
+      def loop(remainder: List[A], acc: List[B]): List[B] = {
+        remainder match {
+          case List.Nil => acc
+          case head :: tail => loop(tail, f(head) :: acc)
+        }
+      }
+      loop(this, List())
+    }
 
-   object List{
+    /**
+     * Нормальный реверс как частный случай реверса с перевоплощением
+     */
+    def reverse: List[A] = reverse(identity)
+
+    /**
+     * Мэппинг как сочетание реверса с перевоплощением и простого реверса обратно
+     */
+    def map[B](f: A => B): List[B] = this.reverse(f).reverse
+  }
+
+  object List {
+
     case object Nil extends List[Nothing]
+
     case class ::[A](head: A, tail: List[A]) extends List[A]
-    val Cons = ::
+
+    val Cons: ::.type = ::
 
     def apply[T](arg: T*): List[T] = {
-     var l: List[T] = List.Nil
-     arg.foreach(el => l = el :: l)
-     l
+      var l: List[T] = List.Nil
+      arg.foreach(el => l = el :: l)
+      l
     }
-   }
+  }
 
-   val list = 1 :: List.Nil
+  def incList(list: List[Int]): List[Int] = list.map(_ + 1)
 
-   /**
-    *
-    * Реализовать метод конс :: который позволит добавлять элемент в голову списка
-    */
+  def shoutString(list: List[String]): List[String] = list.map("!" + _)
 
-
-   /**
-    *
-    * Реализовать конструктор, для создания списка n элементов
-    */
-
-
-   /**
-    *
-    * Реализовать метод mkString который позволит красиво представить список в виде строки
-    */
-
-
-   /**
-    *
-    * Реализовать метод reverse который позволит заменить порядок элементов в списке на противоположный
-    */
-
-
-   /**
-    *
-    * Написать функцию incList котрая будет принимать список Int и возвращать список,
-    * где каждый элемент будет увеличен на 1
-    */
-
-
-   /**
-    *
-    * Написать функцию shoutString котрая будет принимать список String и возвращать список,
-    * где к каждому элементу будет добавлен префикс в виде '!'
-    */
-
-
-   /**
-    *
-    * Реализовать метод для списка который будет применять некую ф-цию к элементам данного списка
-    */
-
-
-
- }
+  val listInt: List[Int] = 1 :: 2 :: 3 :: List.Nil
+  val listStr: List[String] = "Hello" :: "Goodbye" :: "See ya" :: List.Nil
+}

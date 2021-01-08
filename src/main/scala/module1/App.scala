@@ -10,6 +10,7 @@ import module1.akka_actors.intro_actors.{Supervisor, abstract_behaviour, actors_
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
+import scala.language.postfixOps
 
 object App {
 
